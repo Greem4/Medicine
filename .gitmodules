@@ -1,0 +1,8 @@
+[submodule "spring-medicines"]
+	path = spring-medicines
+	url = git@github.com:Greem4/spring-medicines.git
+	branch = main
+[submodule "spring-frontend"]
+	path = spring-frontend
+	url = git@github.com:Greem4/spring-frontend.git
+	branch = main
