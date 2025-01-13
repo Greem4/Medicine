@@ -1,7 +1,7 @@
 services:
   db:
     image: bitnami/postgresql
-    container_name: my_postgres_db
+    container_name: postgres_db
     environment:
       POSTGRES_USER: ${DB_USERNAME}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
@@ -17,7 +17,7 @@ services:
     build:
       context: ./spring-medicines
       dockerfile: Dockerfile
-    container_name: app_bac_medicine
+    container_name: app_back_medicine
     ports:
       - "8080:8080"
     environment:
