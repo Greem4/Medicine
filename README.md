@@ -58,7 +58,7 @@
 
 1. **Склонировать** репозиторий:
    ```bash
-   git clone git@github.com:Greem4/Medicine.git
+   git clone https://github.com/Greem4/Medicine.git
    cd Medicine
    git submodule update --init --recursive
 2. **Подставить данные**

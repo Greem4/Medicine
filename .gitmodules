@@ -1,8 +1,8 @@
 [submodule "spring-medicines"]
 	path = spring-medicines
 	url = https://github.com/Greem4/spring-medicines.git
-	branch = master
+	branch = main
 [submodule "spring-frontend"]
 	path = spring-frontend
 	url = https://github.com/Greem4/spring-frontend.git
-	branch = master
+	branch = main
