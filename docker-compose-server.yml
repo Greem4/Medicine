@@ -1,0 +1,65 @@
+services:
+  db:
+    image: postgres:17-alpine
+    container_name: postgres_db
+    environment:
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: medicines_db
+    volumes:
+      - ./db_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - app_network
+    restart: unless-stopped
+
+  backend:
+    image: greem4/medicine-backend:latest
+    container_name: app_back_medicine
+    environment:
+      BASE_URL: ${BASE_URL}
+      DB_URL: ${DB_URL}
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+
+      MAIL_USERNAME: ${MAIL_USERNAME}
+      MAIL_PASSWORD: ${MAIL_PASSWORD}
+      MAIL_SET_FROM: ${MAIL_SET_FROM}
+      MAIL_TO: ${MAIL_TO}
+
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRATION_MS: ${JWT_EXPIRATION_MS}
+      YANDEX_CLIENT_ID: ${YANDEX_CLIENT_ID}
+      YANDEX_CLIENT_SECRET: ${YANDEX_CLIENT_SECRET}
+      YANDEX_REDIRECT_URI: ${YANDEX_REDIRECT_URI}
+      SUCCESS_REDIRECT: ${SUCCESS_REDIRECT}
+      FAILURE_REDIRECT: ${FAILURE_REDIRECT}
+      TZ: Europe/Moscow
+    ports:
+      - "127.0.0.1:8080:8080"
+    depends_on:
+      - db
+    networks:
+      - app_network
+    restart: unless-stopped
+
+  frontend:
+    image: greem4/medicine-frontend:latest
+    container_name: app_front_medicine
+    ports:
+      - "8081:80"
+    depends_on:
+      - backend
+    environment:
+      - TZ=Europe/Moscow
+    networks:
+      - app_network
+    restart: unless-stopped
+
+networks:
+  app_network:
+    driver: bridge
+
+volumes:
+  db_data:
