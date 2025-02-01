@@ -6,13 +6,22 @@ services:
       POSTGRES_USER: ${DB_USERNAME}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: medicines_db
+      TZ: Europe/Moscow
+      POSTGRES_INITDB_ARGS: "--locale=ru_RU.UTF-8 --lc-collate=C --encoding=UTF-8"
     volumes:
-      - ./db_data:/var/lib/postgresql/data
+      - ./pg_data:/var/lib/postgresql/data
+      - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
     ports:
       - "5432:5432"
     networks:
       - app_network
     restart: unless-stopped
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${DB_USERNAME} -d medicines_db" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
 
   backend:
     image: greem4/medicine-backend:latest
@@ -37,12 +46,21 @@ services:
       FAILURE_REDIRECT: ${FAILURE_REDIRECT}
       TZ: Europe/Moscow
     ports:
-      - "127.0.0.1:8080:8080"
-    depends_on:
-      - db
+      - "8080:8080"
     networks:
       - app_network
+    depends_on:
+      db:
+        condition: service_healthy
     restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 5s
 
   frontend:
     image: greem4/medicine-frontend:latest
@@ -52,14 +70,20 @@ services:
     depends_on:
       - backend
     environment:
-      - TZ=Europe/Moscow
-    networks:
-      - app_network
+      TZ: Europe/Moscow
     restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
 
 networks:
   app_network:
     driver: bridge
+    ipam:
+      config:
+        - subnet: 172.28.0.0/16
 
 volumes:
-  db_data:
+  pg_data: {}
