@@ -1,3 +1,4 @@
 .env.production
-.env.prod
+.env.greem4lab
+.env.greemlab
 .env.docker

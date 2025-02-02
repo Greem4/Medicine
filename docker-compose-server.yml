@@ -22,9 +22,32 @@ services:
       timeout: 5s
       retries: 5
 
+  rabbitmq:
+    image: rabbitmq:3.9-management-alpine
+    container_name: rabbitmq_medicines
+    volumes:
+      - ./rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf:ro
+    mem_limit: 512m
+
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBIT_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBIT_PASS}
+
+      TZ: Europe/Moscow
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      - app_network
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD-SHELL", "rabbitmq-diagnostics -q ping" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   backend:
-    image: greem4/medicine-backend:latest
+    image: medicine-backend:latest
     container_name: app_back_medicine
     environment:
       BASE_URL: ${BASE_URL}
@@ -36,6 +59,11 @@ services:
       MAIL_PASSWORD: ${MAIL_PASSWORD}
       MAIL_SET_FROM: ${MAIL_SET_FROM}
       MAIL_TO: ${MAIL_TO}
+
+      SPRING_RABBITMQ_HOST: rabbitmq
+      SPRING_RABBITMQ_PORT: 5672
+      SPRING_RABBITMQ_USERNAME: ${RABBIT_USER}
+      SPRING_RABBITMQ_PASSWORD: ${RABBIT_PASS}
 
       JWT_SECRET: ${JWT_SECRET}
       JWT_EXPIRATION_MS: ${JWT_EXPIRATION_MS}
@@ -52,18 +80,20 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
     restart: unless-stopped
     security_opt:
       - no-new-privileges:true
     tmpfs:
       - /tmp:rw,noexec,nosuid
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      test: [ "CMD", "curl", "-f", "http://localhost:8080/actuator/health" ]
       interval: 30s
       timeout: 5s
 
   frontend:
-    image: greem4/medicine-frontend:latest
+    image: medicine-frontend:latest
     container_name: app_front_medicine
     ports:
       - "8081:80"
@@ -77,6 +107,8 @@ services:
       options:
         max-size: "10m"
         max-file: "3"
+    networks:
+      - app_network
 
 networks:
   app_network:
@@ -86,4 +118,4 @@ networks:
         - subnet: 172.28.0.0/16
 
 volumes:
-  pg_data: {}
+  pg_data: { }

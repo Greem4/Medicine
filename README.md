@@ -47,7 +47,7 @@
 4. **Email-уведомления**
    - Отправка писем об истечении срока годности препаратов
    - SMTP-настройки задаются в `application.yaml` или через `.env`
-   - Используется `JavaMailSender`
+   - Используется `JavaMailSender - RabbirMQ`
 
 5. **Liquibase**
    - Автоматическое создание таблиц и вставка тестовых данных при старте приложения
@@ -67,6 +67,7 @@
 - **Яндекс OAuth2**: Успешный вход через Яндекс возвращает JWT, делая приложение stateless.
 - **Ролевая авторизация**: Используются аннотации типа `@PreAuthorize("hasRole('ADMIN')")` для контроля доступа к защищенным ресурсам.
 - **Инфраструктура для продакшена**: Подготовлена база для работы на сервере с nginx (HTTP → HTTPS).
+- **Отправка уведомлений через брокер RabbitMQ**
 
 ## Запуск и использование через Docker
 
@@ -80,6 +81,8 @@
    git clone https://github.com/Greem4/Medicine.git
    cd Medicine
    git submodule update --init --recursive
+   git checkout stable
+   git submodule foreach --recursive git checkout stable
 - **Backend**: [spring-medicines](https://github.com/Greem4/spring-medicines)
 - **Frontend**: [spring-frontend](https://github.com/Greem4/spring-frontend)
 
@@ -88,5 +91,4 @@
    .env (на основе .env.template)
 3. **Запуск докера**
    ```bash
-    docker compose --env-file .env up -d --build
-   
+    docker compose up -d
